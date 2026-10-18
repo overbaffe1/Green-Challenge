@@ -136,6 +136,7 @@ Those are disqualifying under the rules; see `docs/COMPLIANCE.md`.
 * [`docs/FINDINGS.md`](docs/FINDINGS.md) — what the official stack and public experiments imply.
 * [`docs/SCORE.md`](docs/SCORE.md) — the completion/speed budget for the 68.14 target.
 * [`docs/COMMANDS.md`](docs/COMMANDS.md) — copy-paste runbook from a bare GPU host to a submission.
+* [`docs/ARTIFACTS.md`](docs/ARTIFACTS.md) — fetching a multi-GB artefact through GitHub Actions into git chunks.
 * [`docs/TRAINING.md`](docs/TRAINING.md) — fine-tuning on `GreenChallengeData`.
 
 ## What is verified, and what is not
