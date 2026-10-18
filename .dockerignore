@@ -1,0 +1,16 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+tests
+benchmark_logs
+data
+assets/usd_models
+*.tar.gz
+
+# local model artifacts
+model/
+data/
+benchmark_logs/
+results*.json
