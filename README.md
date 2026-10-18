@@ -132,6 +132,7 @@ Those are disqualifying under the rules; see `docs/COMPLIANCE.md`.
 * [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — build, run, roll back, three-submission plan.
 * [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) — rules mapped to design decisions.
 * [`docs/FINDINGS.md`](docs/FINDINGS.md) — what the official stack and public experiments imply.
+* [`docs/SCORE.md`](docs/SCORE.md) — the completion/speed budget for the 68.14 target.
 * [`docs/TRAINING.md`](docs/TRAINING.md) — fine-tuning on `GreenChallengeData`.
 
 ## What is verified, and what is not

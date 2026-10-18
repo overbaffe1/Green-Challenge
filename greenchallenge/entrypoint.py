@@ -270,6 +270,15 @@ def _apply_cli_overrides(argv: list[str]) -> None:
         "GC_ADAPTER": known.adapter,
         "GC_SPEED": known.speed,
     }
+    if known.port is not None:
+        env_port = os.environ.get("POLICY_PORT")
+        if env_port and env_port.strip() and int(env_port) != known.port:
+            # The image healthcheck reads POLICY_PORT from the container
+            # environment, not from this process, so a CLI port that disagrees
+            # would leave the healthcheck watching the wrong socket.
+            raise SystemExit(
+                "--port must equal POLICY_PORT so the image healthcheck follows it"
+            )
     for name, value in overrides.items():
         if value is not None:
             os.environ[name] = str(value)
