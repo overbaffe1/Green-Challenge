@@ -1,0 +1,8 @@
+artifact: submission.zip
+size_bytes: 3454733203
+sha256: 373d97168e6722895abc92eb459b0e4a21f85f1959f8277428bfc3816de74a5b
+chunk_mb: 90
+parts: 37
+source: presigned URL, fetched 2026-10-18T19:35:03Z
+reassemble: cat submission.zip.part.* > submission.zip
+verify: sha256sum -c SHA256SUMS
