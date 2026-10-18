@@ -1,0 +1,30 @@
+=== date ===
+Sun Oct 18 20:15:25 UTC 2026
+=== dns ===
+37.44.196.20    aij-green-challenge.cr.cloud.ru
+=== v2 endpoint ===
+http=401
+=== manifest HEAD ===
+http=200
+=== docker pull ===
+548f23d4540a: Waiting
+b2a03efee4fd: Waiting
+3d6d349d8a6f: Waiting
+030ef8250936: Retrying in 5 seconds
+9cb31e2e37ea: Retrying in 5 seconds
+b95112eaf283: Retrying in 5 seconds
+030ef8250936: Retrying in 4 seconds
+9cb31e2e37ea: Retrying in 4 seconds
+b95112eaf283: Retrying in 4 seconds
+030ef8250936: Retrying in 3 seconds
+9cb31e2e37ea: Retrying in 3 seconds
+b95112eaf283: Retrying in 3 seconds
+030ef8250936: Retrying in 2 seconds
+9cb31e2e37ea: Retrying in 2 seconds
+b95112eaf283: Retrying in 2 seconds
+030ef8250936: Retrying in 1 second
+9cb31e2e37ea: Retrying in 1 second
+b95112eaf283: Retrying in 1 second
+8ad64a683fd7: Waiting
+error pulling image configuration: download failed after attempts=6: unknown: failed to acquire network quota for blob pull
+=== exit: 0 ===
