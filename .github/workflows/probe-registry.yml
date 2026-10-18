@@ -1,0 +1,36 @@
+name: probe-registry
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [arena/95a163d7-green-challenge]
+    paths: [".github/workflows/probe-registry.yml"]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Probe
+        run: |
+          set +e
+          {
+            echo "=== date ==="; date -u
+            echo "=== dns ==="; getent hosts aij-green-challenge.cr.cloud.ru || echo "no dns"
+            echo "=== v2 endpoint ==="
+            curl -sS -o /dev/null -w 'http=%{http_code}\n' --max-time 20 https://aij-green-challenge.cr.cloud.ru/v2/ 2>&1
+            echo "=== manifest HEAD ==="
+            curl -sS -o /dev/null -w 'http=%{http_code}\n' --max-time 30 \
+              -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+              -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+              "https://aij-green-challenge.cr.cloud.ru/v2/green-vla/manifests/sha256:317dc67f49de511e9fd0fb97fb27fefd3cd95125655c1410ac3956505edd6037" 2>&1
+            echo "=== docker pull ==="
+            docker pull aij-green-challenge.cr.cloud.ru/green-vla@sha256:317dc67f49de511e9fd0fb97fb27fefd3cd95125655c1410ac3956505edd6037 2>&1 | tail -20
+            echo "=== exit: $? ==="
+          } > probe.txt 2>&1
+          cat probe.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: probe
+          path: probe.txt
+          if-no-files-found: error
