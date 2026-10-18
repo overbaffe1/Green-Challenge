@@ -1,0 +1,172 @@
+# Build the submission image on a GitHub runner and push it to GHCR.
+#
+# Why: the working sandbox has no Docker, but the submission must be a real
+# image that the contest platform can pull. A hosted runner has Docker, so it
+# can base on the organisers' image, add this repository's execution layer and
+# publish the result.
+#
+# Inputs:
+#   base_image   digest-pinned reference to the contest image (defaults to the
+#                official baseline digest from the task statement)
+#   tag          tag inside ghcr.io/<owner>/<repo>
+#
+# Outputs: the pushed digest in the job summary, plus a `submission.txt`
+# artefact ready to upload to the platform.
+
+name: build-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_image:
+        description: "Contest base image, preferably pinned by digest"
+        required: false
+        default: "aij-green-challenge.cr.cloud.ru/green-vla@sha256:317dc67f49de511e9fd0fb97fb27fefd3cd95125655c1410ac3956505edd6037"
+      tag:
+        description: "Image tag"
+        required: false
+        default: "1.3"
+  push:
+    branches:
+      - arena/95a163d7-green-challenge
+    paths:
+      - ".github/workflows/build-image.yml"
+
+concurrency:
+  group: build-image
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          set -eux
+          df -h /
+          # The runner ships ~30-90 GB of preinstalled toolchains; a CUDA image
+          # with a checkpoint does not fit alongside them.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL \
+                      /usr/local/share/boost /usr/lib/jvm /etc/mysql /usr/local/aws-cli /opt/google || true
+          sudo apt-get clean
+          docker system prune -af --volumes || true
+          df -h /
+
+      - name: Log in to GHCR
+        run: |
+          set -euo pipefail
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Pull the contest base image
+        id: pull
+        env:
+          BASE_IMAGE: ${{ github.event.inputs.base_image || 'aij-green-challenge.cr.cloud.ru/green-vla@sha256:317dc67f49de511e9fd0fb97fb27fefd3cd95125655c1410ac3956505edd6037' }}
+        run: |
+          set -euo pipefail
+          echo "pulling $BASE_IMAGE"
+          if ! docker pull "$BASE_IMAGE"; then
+            echo "::error::the runner cannot pull the contest image; it may be reachable only from the contest network"
+            exit 1
+          fi
+          SIZE=$(docker image inspect --format '{{.Size}}' "$BASE_IMAGE")
+          echo "base size: $SIZE bytes ($(numfmt --to=iec "$SIZE"))"
+          echo "base_image=$BASE_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          df -h /
+
+      - name: Build the submission image
+        env:
+          BASE_IMAGE: ${{ steps.pull.outputs.base_image }}
+          TAG: ${{ github.event.inputs.tag || '1.3' }}
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}:${TAG}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          docker build -f docker/Dockerfile \
+            --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+            --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            --label "org.opencontainers.image.description=Green Challenge 2026 execution layer (official stack, GC_SPEED=1.3)" \
+            -t "$IMAGE" .
+          docker image inspect --format 'size: {{.Size}} bytes' "$IMAGE"
+          df -h /
+
+      - name: Smoke-test the entrypoint without a GPU
+        run: |
+          set -euo pipefail
+          # The model cannot run here, but the boundary, the config parser and
+          # the disqualification guard must import and start.
+          docker run --rm --network none "$IMAGE" python - <<'PY'
+          import greenchallenge
+          from greenchallenge.config import RuntimeConfig
+          from greenchallenge.feed import FeedConfig
+          runtime = RuntimeConfig.from_env()
+          print("version:", greenchallenge.__version__)
+          print("stack:", runtime.stack, "speed:", runtime.feed.speed,
+                "row_step:", round(runtime.feed.row_step(), 6))
+          assert abs(runtime.feed.row_step() - 1 / 39) < 1e-9
+          print("config ok")
+          PY
+
+      - name: Push
+        id: push
+        run: |
+          set -euo pipefail
+          docker push "$IMAGE"
+          # RepoDigests appears only after a successful push.
+          DIGEST=$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMAGE" | sed 's/.*@//')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "pushed $IMAGE@$DIGEST"
+
+      - name: Make the package public
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          NAME="${GITHUB_REPOSITORY#*/}"
+          # A private GHCR package cannot be pulled anonymously by the judge.
+          gh api --method PATCH "/user/packages/container/${NAME}" \
+            -f visibility=public 2>/dev/null \
+            && echo "package is public" \
+            || echo "::warning::could not set package visibility; set it manually in the package settings"
+
+      - name: Write submission.txt
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          python3 tools/submission_file.py make --ref "$DIGEST" --out submission/submission.txt --force
+          python3 tools/submission_file.py check
+          cat submission/submission.txt
+
+      - name: Summary
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          {
+            echo "## build-image"
+            echo
+            echo "- base: \`${{ steps.pull.outputs.base_image }}\` (${{ steps.pull.outputs.size }} bytes)"
+            echo "- image: \`${{ env.IMAGE }}\`"
+            echo "- digest: \`${{ steps.push.outputs.digest }}\`"
+            echo
+            echo "Upload \`submission/submission.txt\` to the contest page. It contains:"
+            echo
+            echo '```'
+            cat submission/submission.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload submission.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: submission-txt
+          path: submission/submission.txt
+          retention-days: 30
