@@ -72,8 +72,18 @@ jobs:
         run: |
           set -euo pipefail
           echo "pulling $BASE_IMAGE"
-          if ! docker pull "$BASE_IMAGE"; then
-            echo "::error::the runner cannot pull the contest image; it may be reachable only from the contest network"
+          # The contest registry throttles blob downloads and answers
+          # "failed to acquire network quota for blob pull" (the platform shows
+          # this as QUOTA_NOT_AVAILABLE). It is transient: retry with backoff.
+          ok=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if docker pull "$BASE_IMAGE"; then ok=1; break; fi
+            wait=$(( attempt * 30 ))
+            echo "pull attempt $attempt failed; sleeping ${wait}s"
+            sleep "$wait"
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "::error::registry quota still blocks the pull after 8 attempts"
             exit 1
           fi
           SIZE=$(docker image inspect --format '{{.Size}}' "$BASE_IMAGE")
