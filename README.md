@@ -18,8 +18,9 @@ score       = Σ Speed_{i,g}
 ```
 
 `T_max` is the episode timeout (52 s / 70 s / 35 s for the three scenarios), and an
-incomplete subtask contributes 0. With the published run config — 8 episodes per
-scenario and 4 + 5 + 2 subtasks — the maximum is **88**. The target for this work is
+incomplete subtask contributes 0. The evaluation runs 8 episodes per scenario with
+4 + 5 + 2 subtasks, so the maximum is **88**. There is no private leaderboard: the
+public one is final, and only `SIM_SEED` changes between runs. The target for this work is
 **> 68.14**, which is 77.4 % of that maximum: it requires both high completion and
 fast execution.
 
@@ -137,6 +138,8 @@ Those are disqualifying under the rules; see `docs/COMPLIANCE.md`.
 * [`docs/SCORE.md`](docs/SCORE.md) — the completion/speed budget for the 68.14 target.
 * [`docs/COMMANDS.md`](docs/COMMANDS.md) — copy-paste runbook from a bare GPU host to a submission.
 * [`docs/ARTIFACTS.md`](docs/ARTIFACTS.md) — fetching a multi-GB artefact through GitHub Actions into git chunks.
+* [`docs/SUBMISSION.md`](docs/SUBMISSION.md) — the accepted submission format and the platform's failure modes.
+* [`submission/`](submission/) — the file to upload (`@sha256:...`), its validator, and a baseline fallback.
 * [`docs/TRAINING.md`](docs/TRAINING.md) — fine-tuning on `GreenChallengeData`.
 
 ## What is verified, and what is not

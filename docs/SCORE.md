@@ -9,7 +9,9 @@ fraction of subtasks completed and `v_s` their mean speed. Then
 score ≈ Σ_s E_s · N_s · c_s · v_s
 ```
 
-With the published run config (`E = 8`, `N = 4, 5, 2`) there are **88 subtask slots**
+The evaluation runs 8 episodes per scenario (`E = 8`), with `N = 4, 5, 2` subtasks —
+24 episodes and **88 subtask slots** in total. The public leaderboard is the final
+one; there is no hidden test set with different scenes.
 and the target is 77.4 % of the maximum.
 
 ## The completion/speed frontier

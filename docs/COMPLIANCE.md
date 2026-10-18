@@ -21,6 +21,23 @@ still the model's, shaped by the limiter exactly as the reference feed shapes it
 own predicted finger rows, not from a clock or a scene lookup. It changes how fast
 rows are played, never their values.
 
+## Confirmed by the organisers
+
+The following answers from the contest thread are not our interpretation; they
+are the organisers' own words (see `docs/SUBMISSION.md` for the quotes):
+
+* the simulator runs with `PROPRIO_CMD=all`, so the model receives its own
+  previous command as proprioception — our echo decoding is mandatory, not
+  defensive;
+* smoothing, action filtering, joint-tracking calibration (the baseline's
+  `JointCalibratedBoundary`) and feeding the model's last command back into the
+  state are explicitly allowed;
+* several models with routing by instruction or observation are allowed; two
+  action experts with a learned visual switch are allowed;
+* fixed poses, time-indexed command substitution and disabling the model on a
+  subset of tasks are disqualifying, which is exactly what the guard below
+  blocks.
+
 ## The disqualification guard
 
 `greenchallenge/config.py` refuses to start when any of these is set to a

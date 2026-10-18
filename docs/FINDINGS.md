@@ -30,6 +30,19 @@ defaults the blend peaks at **15 live plans**. Our implementation reproduces thi
 number in the CPU smoke test, which is the cheapest end-to-end check that the
 scheduling is right.
 
+## Confirmed by the organisers
+
+* The evaluation simulator runs with `PROPRIO_CMD=all`: the policy receives its
+  own previous command, not the measured joints. (Answer in the contest thread,
+  2 October.)
+* There is no private leaderboard; the public one is final. The task set, scenes,
+  objects and goals are fixed at 8 episodes per scenario; only `SIM_SEED` changes.
+* Smoothing, filtering, joint-tracking calibration and handing the model's last
+  command back into the state are allowed. Multiple models with routing, and two
+  action experts with a learned visual switch, are allowed.
+* One submission per day, best score counts, deadline 2026-10-20 23:59 MSK, and
+  images must stay in the registry for possible recomputation.
+
 ## What the score rewards
 
 Source: the simulator's `scripts/results_aggregator.py`, quoted in
