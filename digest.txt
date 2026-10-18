@@ -1,0 +1,11 @@
+=== date ===
+Sun Oct 18 20:28:07 UTC 2026
+=== tags ===
+{"errors":[{"code":"DENIED","message":"invalid token"}]}
+
+=== anonymous manifest for :1.3 ===
+HTTP/2 403 
+{"errors":[{"code":"DENIED","message":"invalid token"}]}
+
+=== authenticated view ===
+ERROR: ghcr.io/overbaffe1/green-challenge:1.3: not found
