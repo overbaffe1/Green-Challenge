@@ -58,6 +58,8 @@ The two-hop transport and timing are tested end to end on CPU with a scripted po
 
 ## Quick start
 
+Полная последовательность команд для своей машины: [`docs/COMMANDS.md`](docs/COMMANDS.md).
+
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
@@ -133,6 +135,7 @@ Those are disqualifying under the rules; see `docs/COMPLIANCE.md`.
 * [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) — rules mapped to design decisions.
 * [`docs/FINDINGS.md`](docs/FINDINGS.md) — what the official stack and public experiments imply.
 * [`docs/SCORE.md`](docs/SCORE.md) — the completion/speed budget for the 68.14 target.
+* [`docs/COMMANDS.md`](docs/COMMANDS.md) — copy-paste runbook from a bare GPU host to a submission.
 * [`docs/TRAINING.md`](docs/TRAINING.md) — fine-tuning on `GreenChallengeData`.
 
 ## What is verified, and what is not
