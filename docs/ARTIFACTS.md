@@ -59,10 +59,13 @@ LIST=1 ./tools/fetch_parts.sh /tmp/submission.zip   # ещё и список ф�
 ```bash
 git clone --depth 1 --branch artifacts/submission-zip \
   https://github.com/overbaffe1/Green-Challenge.git parts
-cd parts && cat submission.zip.part.* > submission.zip && sha256sum -c SHA256SUMS
+cd parts && cat submission.zip.part.* > submission.zip
+sha256sum submission.zip   # сверить с полем sha256 в MANIFEST.txt
 ```
 
 Клон ветки занимает ~5.7 ГБ на диске (пак + рабочие файлы) и ~6 минут.
+Прогоны после 2026-10-18 кладут рядом ещё и `SHA256SUMS` в формате
+`sha256sum -c`; в текущем прогоне его нет, сверяйтесь с `MANIFEST.txt`.
 
 ## Как запустить заново (другая ссылка)
 
