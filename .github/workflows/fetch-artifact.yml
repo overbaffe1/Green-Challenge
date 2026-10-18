@@ -92,41 +92,40 @@ jobs:
           echo "max_gb=${INPUT_MAX_GB:-8}" >> "$GITHUB_OUTPUT"
           echo "Preparing download of ${#URL} characters from the presigned URL"
 
-      - name: Probe size
+      - name: Probe reachability
         id: probe
+        env:
+          URL: ${{ steps.cfg.outputs.url }}
+        run: |
+          set -euo pipefail
+          # A HEAD request fails signature validation on many presigned GET
+          # URLs, so ask for a single byte and read the size off Content-Range.
+          CODE=$(curl -sS -o /dev/null -D headers.txt -w '%{http_code}' \
+                   --max-time 30 -r 0-0 "$URL" || true)
+          echo "range request status: $CODE"
+          grep -i '^content-range:' headers.txt || true
+          SIZE=$(grep -i '^content-range:' headers.txt | tail -1 | tr -d '\r' | sed 's#.*/##')
+          echo "size_bytes=${SIZE:-0}" >> "$GITHUB_OUTPUT"
+          if [ "$CODE" != "206" ] && [ "$CODE" != "200" ]; then
+            echo "::error::the presigned URL answered $CODE; it is expired or the signature is wrong"
+            exit 1
+          fi
+          if [ -n "${SIZE:-}" ] && [ "$SIZE" != "0" ]; then
+            echo "object size: $(numfmt --to=iec "$SIZE")"
+          fi
+
+      - name: Download
         env:
           URL: ${{ steps.cfg.outputs.url }}
           MAX_GB: ${{ steps.cfg.outputs.max_gb }}
         run: |
           set -euo pipefail
-          # A HEAD request on a presigned S3/OBS URL is free and tells us the
-          # size before committing to a multi-gigabyte download.
-          CODE=$(curl -sS -o /dev/null -D headers.txt -w '%{http_code}' -I "$URL" || true)
-          cat headers.txt
-          SIZE=$(grep -i '^content-length:' headers.txt | tail -1 | tr -d '\r' | awk '{print $2}')
-          echo "http_status=$CODE"
-          echo "size_bytes=${SIZE:-0}" >> "$GITHUB_OUTPUT"
-          if [ "$CODE" != "200" ]; then
-            echo "::error::HEAD returned $CODE; the presigned URL is expired or wrong"
-            exit 1
-          fi
-          MAX=$(( ${MAX_GB:-8} * 1000 * 1000 * 1000 ))
-          if [ -n "${SIZE:-}" ] && [ "$SIZE" -gt "$MAX" ]; then
-            echo "::error::object is $SIZE bytes, above the ${MAX_GB} GB guard"
-            exit 1
-          fi
-          echo "object size: $(numfmt --to=iec "${SIZE:-0}") bytes"
-
-      - name: Download
-        env:
-          URL: ${{ steps.cfg.outputs.url }}
-        run: |
-          set -euo pipefail
+          MAX=$(( ${MAX_GB:-8} * 1000000000 ))
           # Resume + retries: a 3 GB transfer over a flaky link should not
           # start over. --fail makes an expired signature an error, not an
           # HTML error page saved as the artefact.
-          curl -L --fail-early --retry 8 --retry-delay 5 --retry-all-errors \
-               --continue-at - --connect-timeout 30 \
+          curl -L --fail --retry 8 --retry-delay 5 --retry-all-errors \
+               --continue-at - --connect-timeout 30 --max-filesize "$MAX" \
                -o submission.zip "$URL" --progress-bar
           ls -l submission.zip
           echo "size: $(stat -c%s submission.zip) bytes"
