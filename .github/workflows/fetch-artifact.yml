@@ -76,9 +76,11 @@ jobs:
             echo "::warning::URL taken from submission.url; delete it and use the secret"
           fi
           if [ -z "$URL" ]; then
-            echo "::error::No URL. Set the SUBMISSION_URL secret, pass the url input, or add submission.url."
-            exit 1
+            echo "have_url=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::no URL configured (secret, input or submission.url); nothing to fetch"
+            exit 0
           fi
+          echo "have_url=true" >> "$GITHUB_OUTPUT"
           echo "::add-mask::$URL"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
@@ -93,6 +95,7 @@ jobs:
           echo "Preparing download of ${#URL} characters from the presigned URL"
 
       - name: Probe reachability
+        if: steps.cfg.outputs.have_url == 'true'
         id: probe
         env:
           URL: ${{ steps.cfg.outputs.url }}
@@ -115,6 +118,7 @@ jobs:
           fi
 
       - name: Download
+        if: steps.cfg.outputs.have_url == 'true'
         env:
           URL: ${{ steps.cfg.outputs.url }}
           MAX_GB: ${{ steps.cfg.outputs.max_gb }}
@@ -140,6 +144,7 @@ jobs:
           echo "entries: $(tail -n +4 listing.txt | wc -l)"
 
       - name: Checksum and split
+        if: steps.cfg.outputs.have_url == 'true'
         env:
           CHUNK_MB: ${{ steps.cfg.outputs.chunk_mb }}
         run: |
@@ -149,7 +154,7 @@ jobs:
           echo "sha256=$SHA" >> "$GITHUB_ENV"
           echo "size_bytes=$SIZE" >> "$GITHUB_ENV"
           split -b "${CHUNK_MB}M" -d -a 3 submission.zip submission.zip.part.
-          ls -l submission.zip.part.* | head -5
+          ls -l submission.zip.part.* | sed -n '1,5p'
           echo "parts: $(ls submission.zip.part.* | wc -l)"
           {
             echo "artifact: submission.zip"
@@ -163,9 +168,11 @@ jobs:
           } > MANIFEST.txt
           cat MANIFEST.txt
           sha256sum submission.zip.part.* > SHA256SUMS.parts
+          echo "$SHA  submission.zip" > SHA256SUMS
           rm submission.zip
 
       - name: Commit chunks to the artefacts branch
+        if: steps.cfg.outputs.have_url == 'true'
         env:
           BRANCH: ${{ steps.cfg.outputs.branch }}
         run: |
@@ -180,6 +187,7 @@ jobs:
           git checkout -q -b "$BRANCH"
           cp "$GITHUB_WORKSPACE/MANIFEST.txt" .
           cp "$GITHUB_WORKSPACE/SHA256SUMS.parts" .
+          cp "$GITHUB_WORKSPACE/SHA256SUMS" .
           # Batch the chunks: one push per 4 parts keeps each pack well under
           # GitHub's push limit while avoiding ~40 round trips.
           n=0
@@ -198,36 +206,41 @@ jobs:
             git commit -q -m "final chunks"
             git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
           fi
-          git log --oneline | head -3
+          git log --oneline -3
           echo "branch $BRANCH now has $(ls submission.zip.part.* | wc -l) parts"
 
       - name: Publish release as a backup
+        if: steps.cfg.outputs.have_url == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="submission-$(date -u +%Y%m%d-%H%M)"
+          TAG="submission-$(date -u +%Y%m%d-%H%M)-${GITHUB_RUN_NUMBER}"
           echo "TAG=$TAG" >> "$GITHUB_ENV"
           gh release create "$TAG" \
             --repo "${{ github.repository }}" \
             --title "submission.zip $TAG" \
             --notes "sha256 \`${{ env.sha256 }}\`, ${{ env.size_bytes }} bytes, fetched from the presigned URL on $(date -u +%Y-%m-%dT%H:%MZ)." \
-            MANIFEST.txt SHA256SUMS.parts submission.zip.part.*
+            MANIFEST.txt SHA256SUMS SHA256SUMS.parts submission.zip.part.* \
+            || { echo "::warning::release upload failed; the chunks are on the branch"; exit 0; }
           gh release view "$TAG" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[] | "\(.name)\t\(.size)"'
 
       - name: Upload chunks as a workflow artefact
+        if: steps.cfg.outputs.have_url == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: submission-parts
           path: |
             MANIFEST.txt
+            SHA256SUMS
             SHA256SUMS.parts
             submission.zip.part.*
           retention-days: 7
           if-no-files-found: error
 
       - name: Summary
+        if: steps.cfg.outputs.have_url == 'true'
         run: |
           {
             echo "## fetch-artifact"
