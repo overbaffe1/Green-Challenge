@@ -54,6 +54,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
       - name: Resolve URL and guard rails
         id: cfg
         env:
@@ -168,19 +171,20 @@ jobs:
           BRANCH: ${{ steps.cfg.outputs.branch }}
         run: |
           set -euo pipefail
-          git init -q chunks
-          cd chunks
+          mkdir -p /tmp/chunks
+          cd /tmp/chunks
+          git init -q
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config http.postBuffer 524288000
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git checkout -q -b "$BRANCH"
-          cp ../MANIFEST.txt .
-          cp ../SHA256SUMS.parts .
+          cp "$GITHUB_WORKSPACE/MANIFEST.txt" .
+          cp "$GITHUB_WORKSPACE/SHA256SUMS.parts" .
           # Batch the chunks: one push per 4 parts keeps each pack well under
           # GitHub's push limit while avoiding ~40 round trips.
           n=0
-          for part in ../submission.zip.part.*; do
+          for part in "$GITHUB_WORKSPACE"/submission.zip.part.*; do
             cp "$part" .
             n=$((n + 1))
             if [ $((n % 4)) -eq 0 ]; then
