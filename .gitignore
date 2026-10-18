@@ -14,3 +14,6 @@ results*.json
 # editor / OS
 .DS_Store
 .idea/
+
+# never commit a presigned URL
+submission.url

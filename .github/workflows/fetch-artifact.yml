@@ -40,6 +40,7 @@ on:
       - arena/95a163d7-green-challenge
     paths:
       - ".github/workflows/fetch-artifact.yml"
+      - "submission.url"
 
 concurrency:
   group: fetch-artifact
@@ -64,8 +65,15 @@ jobs:
         run: |
           set -euo pipefail
           URL="${INPUT_URL:-${SECRET_URL:-}}"
+          # Last resort: a file at the repo root. It is git-ignored so it is
+          # never committed by accident; the intended paths are the secret or
+          # the workflow_dispatch input.
+          if [ -z "$URL" ] && [ -f submission.url ]; then
+            URL="$(tr -d '\r\n' < submission.url)"
+            echo "::warning::URL taken from submission.url; delete it and use the secret"
+          fi
           if [ -z "$URL" ]; then
-            echo "::error::No URL. Set the SUBMISSION_URL secret or pass the url input."
+            echo "::error::No URL. Set the SUBMISSION_URL secret, pass the url input, or add submission.url."
             exit 1
           fi
           echo "::add-mask::$URL"
@@ -164,6 +172,7 @@ jobs:
           cd chunks
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config http.postBuffer 524288000
           echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git checkout -q -b "$BRANCH"
           cp ../MANIFEST.txt .
