@@ -1,0 +1,234 @@
+# Fetch a large artefact from an external bucket and store it in Git, in
+# ~90 MB chunks, without Git LFS.
+#
+# Why a workflow: the artefact lives behind a presigned Sber OBS URL that a
+# local machine may not be able to reach, while a GitHub-hosted runner can.
+# The URL is a credential: it is read from the SUBMISSION_URL secret and is
+# never written into the repository or printed un-masked.
+#
+# Outputs:
+#   * branch  artifacts/submission-zip   chunk files + MANIFEST.txt + SHA256SUMS
+#   * release submission-<timestamp>     the same chunks as release assets
+#   * artefact `submission-parts`        same chunks, 7-day retention
+#
+# The chunk branch is rewritten from scratch on every run (orphan commit,
+# force-push), so repeated runs do not grow the repository history.
+
+name: fetch-artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Presigned URL override (leave empty to use the SUBMISSION_URL secret)"
+        required: false
+        default: ""
+      chunk_mb:
+        description: "Chunk size in MB; must stay below GitHub's 100 MB per-file limit"
+        required: false
+        default: "90"
+      branch:
+        description: "Branch that receives the chunks"
+        required: false
+        default: "artifacts/submission-zip"
+      max_gb:
+        description: "Refuse to download anything larger than this"
+        required: false
+        default: "8"
+  push:
+    branches:
+      - arena/95a163d7-green-challenge
+    paths:
+      - ".github/workflows/fetch-artifact.yml"
+
+concurrency:
+  group: fetch-artifact
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+
+    steps:
+      - name: Resolve URL and guard rails
+        id: cfg
+        env:
+          SECRET_URL: ${{ secrets.SUBMISSION_URL }}
+          INPUT_URL: ${{ github.event.inputs.url }}
+          INPUT_CHUNK_MB: ${{ github.event.inputs.chunk_mb }}
+          INPUT_BRANCH: ${{ github.event.inputs.branch }}
+          INPUT_MAX_GB: ${{ github.event.inputs.max_gb }}
+        run: |
+          set -euo pipefail
+          URL="${INPUT_URL:-${SECRET_URL:-}}"
+          if [ -z "$URL" ]; then
+            echo "::error::No URL. Set the SUBMISSION_URL secret or pass the url input."
+            exit 1
+          fi
+          echo "::add-mask::$URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          CHUNK_MB="${INPUT_CHUNK_MB:-90}"
+          if [ "$CHUNK_MB" -lt 1 ] || [ "$CHUNK_MB" -ge 100 ]; then
+            echo "::error::chunk_mb must be 1..99 (GitHub rejects files over 100 MB)"
+            exit 1
+          fi
+          echo "chunk_mb=$CHUNK_MB" >> "$GITHUB_OUTPUT"
+          echo "branch=${INPUT_BRANCH:-artifacts/submission-zip}" >> "$GITHUB_OUTPUT"
+          echo "max_gb=${INPUT_MAX_GB:-8}" >> "$GITHUB_OUTPUT"
+          echo "Preparing download of ${#URL} characters from the presigned URL"
+
+      - name: Probe size
+        id: probe
+        env:
+          URL: ${{ steps.cfg.outputs.url }}
+          MAX_GB: ${{ steps.cfg.outputs.max_gb }}
+        run: |
+          set -euo pipefail
+          # A HEAD request on a presigned S3/OBS URL is free and tells us the
+          # size before committing to a multi-gigabyte download.
+          CODE=$(curl -sS -o /dev/null -D headers.txt -w '%{http_code}' -I "$URL" || true)
+          cat headers.txt
+          SIZE=$(grep -i '^content-length:' headers.txt | tail -1 | tr -d '\r' | awk '{print $2}')
+          echo "http_status=$CODE"
+          echo "size_bytes=${SIZE:-0}" >> "$GITHUB_OUTPUT"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::HEAD returned $CODE; the presigned URL is expired or wrong"
+            exit 1
+          fi
+          MAX=$(( ${MAX_GB:-8} * 1000 * 1000 * 1000 ))
+          if [ -n "${SIZE:-}" ] && [ "$SIZE" -gt "$MAX" ]; then
+            echo "::error::object is $SIZE bytes, above the ${MAX_GB} GB guard"
+            exit 1
+          fi
+          echo "object size: $(numfmt --to=iec "${SIZE:-0}") bytes"
+
+      - name: Download
+        env:
+          URL: ${{ steps.cfg.outputs.url }}
+        run: |
+          set -euo pipefail
+          # Resume + retries: a 3 GB transfer over a flaky link should not
+          # start over. --fail makes an expired signature an error, not an
+          # HTML error page saved as the artefact.
+          curl -L --fail-early --retry 8 --retry-delay 5 --retry-all-errors \
+               --continue-at - --connect-timeout 30 \
+               -o submission.zip "$URL" --progress-bar
+          ls -l submission.zip
+          echo "size: $(stat -c%s submission.zip) bytes"
+          file submission.zip
+          # An expired presigned URL returns XML, which curl happily saves.
+          if ! unzip -l submission.zip > listing.txt 2>/dev/null; then
+            echo "::error::downloaded file is not a valid zip; first bytes:"
+            head -c 300 submission.zip
+            exit 1
+          fi
+          head -n 60 listing.txt
+          echo "entries: $(tail -n +4 listing.txt | wc -l)"
+
+      - name: Checksum and split
+        env:
+          CHUNK_MB: ${{ steps.cfg.outputs.chunk_mb }}
+        run: |
+          set -euo pipefail
+          SHA=$(sha256sum submission.zip | awk '{print $1}')
+          SIZE=$(stat -c%s submission.zip)
+          echo "sha256=$SHA" >> "$GITHUB_ENV"
+          echo "size_bytes=$SIZE" >> "$GITHUB_ENV"
+          split -b "${CHUNK_MB}M" -d -a 3 submission.zip submission.zip.part.
+          ls -l submission.zip.part.* | head -5
+          echo "parts: $(ls submission.zip.part.* | wc -l)"
+          {
+            echo "artifact: submission.zip"
+            echo "size_bytes: $SIZE"
+            echo "sha256: $SHA"
+            echo "chunk_mb: $CHUNK_MB"
+            echo "parts: $(ls submission.zip.part.* | wc -l)"
+            echo "source: presigned URL, fetched $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "reassemble: cat submission.zip.part.* > submission.zip"
+            echo "verify: sha256sum -c SHA256SUMS"
+          } > MANIFEST.txt
+          cat MANIFEST.txt
+          sha256sum submission.zip.part.* > SHA256SUMS.parts
+          rm submission.zip
+
+      - name: Commit chunks to the artefacts branch
+        env:
+          BRANCH: ${{ steps.cfg.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git init -q chunks
+          cd chunks
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          git checkout -q -b "$BRANCH"
+          cp ../MANIFEST.txt .
+          cp ../SHA256SUMS.parts .
+          # Batch the chunks: one push per 4 parts keeps each pack well under
+          # GitHub's push limit while avoiding ~40 round trips.
+          n=0
+          for part in ../submission.zip.part.*; do
+            cp "$part" .
+            n=$((n + 1))
+            if [ $((n % 4)) -eq 0 ]; then
+              git add -A
+              git commit -q -m "chunks up to part $n"
+              git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+              echo "pushed $n parts"
+            fi
+          done
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -q -m "final chunks"
+            git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+          fi
+          git log --oneline | head -3
+          echo "branch $BRANCH now has $(ls submission.zip.part.* | wc -l) parts"
+
+      - name: Publish release as a backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="submission-$(date -u +%Y%m%d-%H%M)"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --title "submission.zip $TAG" \
+            --notes "sha256 \`${{ env.sha256 }}\`, ${{ env.size_bytes }} bytes, fetched from the presigned URL on $(date -u +%Y-%m-%dT%H:%MZ)." \
+            MANIFEST.txt SHA256SUMS.parts submission.zip.part.*
+          gh release view "$TAG" --repo "${{ github.repository }}" --json assets \
+            --jq '.assets[] | "\(.name)\t\(.size)"'
+
+      - name: Upload chunks as a workflow artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: submission-parts
+          path: |
+            MANIFEST.txt
+            SHA256SUMS.parts
+            submission.zip.part.*
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          {
+            echo "## fetch-artifact"
+            echo
+            echo "- size: ${{ env.size_bytes }} bytes"
+            echo "- sha256: \`${{ env.sha256 }}\`"
+            echo "- parts: $(ls submission.zip.part.* | wc -l)"
+            echo "- branch: \`${BRANCH}\`"
+            echo "- release: \`${TAG}\`"
+            echo
+            echo "Reassemble: \`cat submission.zip.part.* > submission.zip\`"
+            echo
+            echo '```'
+            head -n 40 listing.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
