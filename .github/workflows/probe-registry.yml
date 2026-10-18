@@ -29,8 +29,17 @@ jobs:
             echo "=== exit: $? ==="
           } > probe.txt 2>&1
           cat probe.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: probe
-          path: probe.txt
-          if-no-files-found: error
+      - name: Publish the probe result as a branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/out && cd /tmp/out
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b probe/registry
+          cp "$GITHUB_WORKSPACE/probe.txt" .
+          git add probe.txt
+          git commit -q -m "probe result"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" probe/registry
