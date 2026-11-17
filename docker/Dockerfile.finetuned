@@ -1,0 +1,65 @@
+# syntax=docker/dockerfile:1.7
+# ============================================================================
+# Submission image with a fine-tuned checkpoint
+#
+# Build context layout (model/ is git-ignored):
+#
+#   model/
+#     checkpoint/pretrained_model/{config.json,model.safetensors}
+#     checkpoint/norm_stats/<asset_id>/norm_stats.json
+#     conf/green_finetuned.yaml
+#
+# Build:
+#   docker build -f docker/Dockerfile.finetuned \
+#     --build-arg BASE_IMAGE='aij-green-challenge.cr.cloud.ru/green-vla@sha256:<digest>' \
+#     -t green-challenge:finetuned .
+#
+# Run:
+#   docker run --gpus all --rm -p 8999:8999 \
+#     -e POLICY_PORT=8999 -e POLICY_RAW_PORT=8998 \
+#     -e GC_SPEED=1.3 -e S0S1_DATA_CONFIG=green_finetuned \
+#     green-challenge:finetuned
+# ============================================================================
+
+ARG BASE_IMAGE=aij-green-challenge.cr.cloud.ru/green-vla:latest
+FROM ${BASE_IMAGE}
+
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    CHECKPOINT_PATH=/ckpt \
+    S0S1_DATA_CONFIG=green_finetuned \
+    GC_STACK=official \
+    GC_SPEED=1.3 \
+    GC_ROW_DT=0.03333333333333333 \
+    GC_TELEMETRY=/tmp/greenchallenge/tracking.jsonl
+
+RUN if [ -f /app/docker/entrypoint.py ]; then \
+        cp /app/docker/entrypoint.py /app/docker/entrypoint.official.py; \
+    fi
+
+# Replace, do not merge with, the checkpoint that came with the base image.
+RUN rm -rf /ckpt && mkdir -p /ckpt
+COPY model/checkpoint/ /ckpt/
+COPY model/conf/ /app/lerobot/conf/
+
+COPY greenchallenge /app/greenchallenge
+COPY docker/entrypoint.py /app/docker/entrypoint.py
+COPY docs /app/docs
+
+# The contract must match the checkpoint: a missing norm_stats file or a wrong
+# config name is a load-time failure, not a silent fallback.
+RUN test -f /ckpt/pretrained_model/config.json \
+    && test -f /ckpt/pretrained_model/model.safetensors \
+    && test -d /ckpt/norm_stats \
+    && python -c "import greenchallenge; print('greenchallenge', greenchallenge.__version__)"
+
+EXPOSE 8999
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
+    CMD ["python", "-c", "import os,sys,urllib.request; p=os.environ.get('POLICY_PORT','8999'); sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:'+p+'/healthz', timeout=4).status==200 else 1)"]
+
+ENTRYPOINT ["python", "/app/docker/entrypoint.py"]
+CMD []

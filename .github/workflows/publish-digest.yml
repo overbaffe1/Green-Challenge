@@ -1,0 +1,70 @@
+# Read the pushed image's digest straight from the registry, verify that the
+# package is anonymously pullable, and publish both facts on a branch (the
+# only channel this session can read).
+name: publish-digest
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [arena/95a163d7-green-challenge]
+    paths: [".github/workflows/publish-digest.yml"]
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      packages: read
+
+    steps:
+      - name: Read the manifest digest
+        id: read
+        env:
+          OWNER: ${{ github.repository_owner }}
+          IMAGE_NAME: ${{ github.event.repository.name }}
+          TAG: "1.3"
+        run: |
+          set +e
+          PKG="$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')"
+          OWNER_LC="$(echo "${OWNER}" | tr '[:upper:]' '[:lower:]')"
+          {
+            echo "=== date ==="; date -u
+            echo "=== tags ==="
+            TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:${OWNER_LC}/${PKG}:pull&service=ghcr.io" | sed 's/.*"token":"\([^"]*\)".*/\1/')
+            curl -s -H "Authorization: Bearer ${TOKEN}" \
+                 "https://ghcr.io/v2/${OWNER_LC}/${PKG}/tags/list" | head -c 2000
+            echo
+            echo "=== anonymous manifest for :${TAG} ==="
+            curl -s -o /tmp/manifest.json -D /tmp/headers.txt \
+                 -H "Authorization: Bearer ${TOKEN}" \
+                 -H 'Accept: application/vnd.oci.image.index.v1+json' \
+                 -H 'Accept: application/vnd.docker.distribution.manifest.list.v2+json' \
+                 -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+                 -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' \
+                 "https://ghcr.io/v2/${OWNER_LC}/${PKG}/manifests/${TAG}"
+            grep -iE '^HTTP|docker-content-digest' /tmp/headers.txt
+            head -c 600 /tmp/manifest.json
+            echo
+            echo "=== authenticated view ==="
+            echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin >/dev/null 2>&1
+            docker buildx imagetools inspect "ghcr.io/${OWNER_LC}/${PKG}:${TAG}" 2>&1 | head -20
+          } > digest.txt 2>&1
+          cat digest.txt
+          DIGEST=$(grep -i '^docker-content-digest:' /tmp/headers.txt | head -1 | tr -d '\r' | awk '{print $2}')
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the result on a branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/out && cd /tmp/out
+          git init -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -q -b submission/digest
+          cp "$GITHUB_WORKSPACE/digest.txt" .
+          git add digest.txt
+          git commit -q -m "image digest"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" submission/digest
