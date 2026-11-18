@@ -72,8 +72,10 @@ not published). Numbers are from the public partial leaderboard as reported ther
 
 Two conclusions shaped this repository:
 
-1. **Playback rate is the reliable lever.** 1.3× is a 17 % gain with no loss of
-   completion; the adapter and two fine-tunes did not beat it.
+1. **Playback rate was the strongest lever in that comparison.** At 1.3× the
+   aggregate score was 17 % higher; the adapter and two fine-tunes did not beat
+   it. The published aggregate does not tell us whether completion stayed the
+   same.
 2. **Naive adaptive speed is a trap.** Their row-wise finger-travel detector fired on
    59.9 % of rows (2.3 % of demonstrations), so the plan was slowed almost
    everywhere. A windowed "net travel" detector fired on 2.8 % of rows at
@@ -97,8 +99,9 @@ blend life 1.20 s, so it does not bite; above ~1.42× it can. `expire_frozen`
 
 ## Implications
 
-* The default submission is the official stack at 1.3×. It is measured, it is the
-  organisers' own code path, and it changes no model semantics.
+* The default configuration uses the official stack at 1.3×. The playback setting
+  follows that published comparison. It keeps the organisers' own code path and
+  does not change the checkpoint.
 * The custom boundary exists to make the *next* experiments cheap: expiry, adaptive
   speed, blend-skip on fingers, period changes. Each is one environment variable and
   one A/B run.

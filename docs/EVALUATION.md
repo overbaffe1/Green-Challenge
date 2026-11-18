@@ -23,8 +23,10 @@ Consequences:
    entire speed contribution, and the subtasks after it may not start.
 2. **The same `T_max` covers every subtask of a scenario**, so a slow first subtask
    is expensive twice: it burns its own budget and delays the ones after it.
-3. **A 1.3× playback multiplies every `(1 - Speed)` term by 0.77.** If a subtask took
-   10 s of a 52 s budget (speed 0.81), it becomes 7.7 s (speed 0.85).
+3. **If task duration scaled exactly with playback rate**, a 1.3× playback would
+   multiply each `(1 - Speed)` term for tasks still completed by 0.77. A task taking
+   10 s of a 52 s budget (speed 0.81) would take 7.7 s (speed 0.85). Only an A/B run
+   can tell whether actual duration or completion changes.
 4. Scores are integers-ish at the extremes: zero completed subtasks is a zero score,
    regardless of how good the motion looked.
 

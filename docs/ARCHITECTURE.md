@@ -95,9 +95,9 @@ requests (`period / control_dt = 0.080 / 0.004`):
 
 Numbers at `GC_SPEED=1.3`: row step 25.64 ms, plan horizon 1.312 s, blend life
 1.20 s, request period 80 ms, reply 20 commands. Because the life is shorter than
-the horizon, no plan ever contributes its frozen tail. At 1.0× the horizon is 1.70 s
-and a stale plan would freeze inside the blend after 1.2 s; `expire_frozen` drops it
-instead, which is the only behavioural difference from the reference feed at 1.0×.
+the horizon at both 1.0× and 1.3×, an old plan ages out of the blend before its last
+row freezes. Above about 1.42× the horizon can be shorter than the blend life;
+`expire_frozen` then drops old plans that are already past their last row.
 
 ### Why the request rate is fixed
 
