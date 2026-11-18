@@ -8,6 +8,7 @@ benchmark_logs
 data
 assets/usd_models
 assets/portfolio/
+docs/control-room/
 *.tar.gz
 
 # local model artifacts

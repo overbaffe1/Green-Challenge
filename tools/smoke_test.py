@@ -13,6 +13,7 @@ usable as a pre-submission check of the transport layer.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import socket
 import sys
@@ -28,12 +29,17 @@ if __package__ in (None, ""):
     # ``python tools/smoke_test.py`` puts tools/ on sys.path, not the repo root.
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from greenchallenge import wire
+from greenchallenge import layout, wire
 from greenchallenge.boundary import Boundary, BoundaryConfig
 from greenchallenge.feed import FeedConfig
 from greenchallenge.metrics import JsonlLogger
 from greenchallenge.upstream import UpstreamClient
 from tools.fake_upstream import ScriptedTestPolicy
+
+
+CAPTURE_JOINTS = ("right_shoulder_pitch", "right_elbow_pitch")
+TORSO_START = layout.WIRE_SLICES["torso_joint_pos"].start
+CAPTURE_INDICES = tuple(layout.JOINT_NAMES_41.index(name) - TORSO_START for name in CAPTURE_JOINTS)
 
 
 def free_port() -> int:
@@ -91,9 +97,13 @@ def main() -> int:
     parser.add_argument("--speed", type=float, default=1.3)
     parser.add_argument("--seconds", type=float, default=3.0, help="simulated seconds")
     parser.add_argument("--proprio", default="all", choices=("all", "measured", "auto"))
-    parser.add_argument("--telemetry", default=None)
+    parser.add_argument("--telemetry", default=None, type=Path)
+    parser.add_argument("--capture", type=Path, help="write two emitted joint channels and feed counters to JSON")
+    parser.add_argument("--keep-frozen", action="store_true", help="keep expired plans until blend lifetime ends")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
+    if args.capture and args.telemetry and args.capture.resolve() == args.telemetry.resolve():
+        parser.error("--capture and --telemetry must use different files")
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
@@ -116,10 +126,11 @@ def main() -> int:
         telemetry_path = temporary.name
         temporary.close()
 
+    feed = FeedConfig(speed=args.speed, expire_frozen=not args.keep_frozen)
     boundary = Boundary(
         client,
         config=BoundaryConfig(proprio=args.proprio),
-        feed_config=FeedConfig(speed=args.speed),
+        feed_config=feed,
         telemetry=JsonlLogger(telemetry_path),
     )
     server = wire.WebSocketPolicyServer(boundary, host="127.0.0.1", port=policy_port, log_requests=False)
@@ -132,25 +143,36 @@ def main() -> int:
     assert metadata["feed_by_server"] is True, metadata
     assert metadata["action_horizon"] == 50, metadata
 
-    tick = 0.004
-    steps = max(1, int(round(args.seconds / (20 * tick))))
+    tick = float(metadata["control_dt"])
+    commands_per_request = int(metadata["greenchallenge"]["ticks_per_period"])
+    period = commands_per_request * tick
+    steps = max(1, int(round(args.seconds / period)))
+    capture = [] if args.capture else None
     last = None
     started = time.monotonic()
     for step in range(steps):
-        t = step * 20 * tick
+        t = round(step * period, 6)
         reply = simulator.step(observation(t, last, reset=step == 0))
         rows = reply["actions_list"]
-        if len(rows) != 20:
-            raise SystemExit(f"reply {step} had {len(rows)} rows, expected 20")
+        if len(rows) != commands_per_request:
+            raise SystemExit(f"reply {step} had {len(rows)} rows, expected {commands_per_request}")
         if not all(isinstance(row["finger_joint_pos"], list) for row in rows):
             raise SystemExit(f"reply {step} is not wire-encoded")
+        if capture is not None:
+            stats = boundary.feed.stats
+            capture.append({
+                "t": t,
+                "live": stats.last_live,
+                "frozen_dropped": stats.frozen_dropped,
+                "commands": [[round(row["torso_joint_pos"][i], 6) for i in CAPTURE_INDICES] for row in rows],
+            })
         last = rows[-1]
 
     elapsed = time.monotonic() - started
     print(f"requests:     {steps}")
     print(f"model calls:  {fake.calls}")
     print(f"wall time:    {elapsed:.2f} s")
-    print(f"sim time:     {steps * 20 * tick:.2f} s")
+    print(f"sim time:     {steps * period:.2f} s")
     print(f"speed:        {args.speed:.2f}x")
     print(f"live plans:   {boundary.feed.stats.live_peak} peak")
     print(f"frozen drops: {boundary.feed.stats.frozen_dropped}")
@@ -162,6 +184,24 @@ def main() -> int:
     client.close()
     server_thread.join(timeout=5)
     upstream_thread.join(timeout=5)
+
+    if capture is not None:
+        recording = {
+            "joint_names": CAPTURE_JOINTS,
+            "control_dt": tick,
+            "commands_per_request": commands_per_request,
+            "rows_per_plan": metadata["action_horizon"],
+            "speed": feed.speed,
+            "row_step": feed.row_step(),
+            "lead": feed.lead,
+            "blend_life": feed.blend_life,
+            "expire_frozen": feed.expire_frozen,
+            "live_peak": boundary.feed.stats.live_peak,
+            "model_calls": fake.calls,
+            "requests": capture,
+        }
+        args.capture.write_text(json.dumps(recording, separators=(",", ":"), allow_nan=False) + "\n", encoding="utf-8")
+        print(f"capture:      {args.capture}")
     return 0
 
 

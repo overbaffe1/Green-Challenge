@@ -1,10 +1,18 @@
-[Русская версия](../../README.md) · [CPU trace and artwork](README.md)
+[Русская версия](../../README.md) · [Exhibition notes](exhibition.md)
 
 <img src="../../assets/portfolio/cover.svg" alt="Green Challenge 2026 · AI Journey. Technical illustration of a robot arm on a grid.">
 
 # Green Challenge 2026 — action execution for GreenVLA
 
 A hackathon project for [Green Challenge 2026](https://dsworks.ru/en/champ/aij26-green) at AI Journey. It uses the organisers’ GreenVLAv1.1 checkpoint unchanged. This project builds the layer that turns the model’s **50-row action plans** into **20 control commands every 80 ms** for the humanoid simulator.
+
+## Explore the exhibits
+
+| Exhibit | Try it |
+| --- | --- |
+| **01 · Control room** | [Download the offline player](../../assets/portfolio/control-room.zip?raw=true), extract it and open `index.html`. Scrub the recorded joint commands one tick at a time, overlay an A/B run, or look up a channel in the raw, model and wire layouts. The interface is in Russian. |
+| **02 · A/B at 1.8×** | [Read the comparison](exhibition.md#02--два-прогона): dropping expired plans changes the peak from 15 to 12 active plans on the CPU stand-in. Not a GreenSim score or a motion-quality claim. |
+| **03 · Time relief** | [Rotate the STL on GitHub](../../assets/portfolio/command-relief.stl). Each rib is one request; 20 samples encode the elbow command as height. |
 
 ## Engineering contribution
 

@@ -1,10 +1,27 @@
-<a href="#инженерный-кейс"><img src="assets/portfolio/cover.svg" alt="Green Challenge 2026 · AI Journey. Чертёж манипулятора на координатной сетке."></a>
+<a href="#витрина"><img src="assets/portfolio/cover.svg" alt="Green Challenge 2026 · AI Journey. Чертёж манипулятора на координатной сетке."></a>
 
 # От плана модели к командам робота
 
 Проект участника хакатона [Green Challenge 2026](https://dsworks.ru/en/champ/aij26-green) на AI Journey. **GreenVLA предсказывает, что делать дальше; слой исполнения решает, когда отправить каждую команду.** В основе — чекпоинт организаторов, без переобучения. Вклад проекта — управление таймингом, адаптер протокола и стенд для проверки без GPU.
 
-[Инженерный кейс](#инженерный-кейс) · [Запуск на CPU](#запуск-на-cpu) · [Документация](#документация) · [English](docs/portfolio/overview.en.md)
+[Витрина](#витрина) · [Инженерный кейс](#инженерный-кейс) · [Запуск на CPU](#запуск-на-cpu) · [English](docs/portfolio/overview.en.md)
+
+## Витрина
+
+**Три способа разобрать один поток команд.** Выбери прибор: пульт с перемоткой, два прогона бок о бок или слепок команды в 3D.
+
+<p align="center"><a href="docs/portfolio/exhibition.md#01--пульт-исполнения"><img src="assets/portfolio/card-01.svg" width="32%" alt="01 · Пульт исполнения с перемоткой записи"></a> <a href="docs/portfolio/exhibition.md#02--два-прогона"><img src="assets/portfolio/card-02.svg" width="32%" alt="02 · A/B при 1,8×: 15 и 12 активных планов в пике"></a> <a href="assets/portfolio/command-relief.stl"><img src="assets/portfolio/card-03.svg" width="32%" alt="03 · Повернуть рельеф команд локтя в 3D-просмотрщике GitHub"></a></p>
+
+**[Скачать пульт (ZIP) ↓](assets/portfolio/control-room.zip?raw=true)** — распакуй архив и открой `index.html`. Ничего устанавливать не надо: запись, таймлайн, A/B и карта каналов работают без сети.
+
+[Как читать A/B](docs/portfolio/exhibition.md#02--два-прогона) · [Покрутить STL](assets/portfolio/command-relief.stl) · [Все экспонаты и исходники](docs/portfolio/exhibition.md)
+
+<a href="docs/portfolio/exhibition.md#01--пульт-исполнения"><picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="assets/portfolio/arm-replay.png">
+  <img src="assets/portfolio/arm-replay.gif" alt="Проекция двух записанных углов: плечо и локоть двигаются, а курсор проходит по общему времени записи.">
+</picture></a>
+
+*На схеме — две команды из реального CPU-теста, не измеренная поза робота. На пульте можно остановиться на любом из 760 тактов или переключиться на другую запись.*
 
 ## Инженерный кейс
 
@@ -25,13 +42,6 @@ GreenVLA получает состояние робота, кадры с кам�
 
 ## Запуск на CPU
 
-<a href="docs/portfolio/README.md"><picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="assets/portfolio/cpu-trace.png">
-  <img src="assets/portfolio/cpu-trace.gif" alt="Телеметрия CPU-прогона: 38 запросов, 50 строк плана на входе и 20 команд на выходе. Число активных планов растёт до 15 и держится на этом уровне.">
-</picture></a>
-
-*График из реальной телеметрии smoke-теста, не запись симулятора: тестовый клиент и тестовая политика обмениваются данными через настоящий адаптер и action feed. [Статичный кадр](assets/portfolio/cpu-trace.png) · [Как построен график](docs/portfolio/README.md).*
-
 Python 3.10+ и shell. Не нужны Docker, CUDA, веса модели или Isaac Sim.
 
 ```bash
@@ -44,7 +54,7 @@ python -m pytest -q
 python tools/smoke_test.py --speed 1.3 --seconds 3
 ```
 
-В этом прогоне — **38 запросов** к адаптеру и столько же вызовов тестовой политики. Каждый ответ содержит **20 команд**, в смешивании одновременно участвует до **15 планов**. Это проверка транспорта и планирования, а не качества захватов. Запуск настоящего чекпоинта на GPU и итоговый скор в GreenSim здесь не подтверждены.
+В этом прогоне — **38 запросов** к адаптеру и столько же вызовов тестовой политики. Каждый ответ содержит **20 команд**, в смешивании одновременно участвует до **15 планов** ([график телеметрии](docs/portfolio/README.md)). Это проверка транспорта и планирования, а не качества захватов. Запуск настоящего чекпоинта на GPU и итоговый скор в GreenSim здесь не подтверждены.
 
 ## Документация
 

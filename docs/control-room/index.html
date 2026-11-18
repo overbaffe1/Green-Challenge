@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#09130f">
+  <meta name="description" content="Интерактивный пульт Green Challenge: запись команд, A/B отсечки планов и карта каналов GreenVLA.">
+  <title>Пульт исполнения · Green Challenge</title>
+  <link rel="stylesheet" href="lab.css">
+  <script src="replay.js" defer></script>
+  <script src="lab.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#replay">К управлению записью</a>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>GREEN CHALLENGE<small>AI JOURNEY / 2026</small></span>
+      </a>
+      <nav aria-label="Навигация по стенду">
+        <a href="#replay">Пульт</a>
+        <a href="#clocks">Тайминг</a>
+        <a href="#patch">Контракт</a>
+      </nav>
+      <a class="repo" href="https://github.com/overbaffe1/Green-Challenge#readme">GitHub <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main id="top" class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <p class="eyebrow"><span></span> ЭКСПОНАТ 01 / CONTROL ROOM</p>
+        <h1 id="title">Пульт исполнения<span>.</span></h1>
+        <p class="lede">Перемотай поток команд, сравни темп планов и проследи, куда уходит каждый канал. Всё на записи сквозного CPU-теста.</p>
+      </div>
+      <div class="capture" role="group" aria-label="О записи">
+        <p><span class="lamp"></span> CPU · ЗАПИСЬ</p>
+        <strong id="capture-size">38 запросов / 760 команд</strong>
+        <span>Тестовая политика · WebSocket × 2</span>
+      </div>
+    </section>
+
+    <noscript><p class="notice">Включи JavaScript для перемотки записи. Код и данные находятся в этой папке и не требуют сети.</p></noscript>
+    <p class="notice" id="missing" hidden>Не найдена запись. Если открываешь стенд без сети, распакуй весь ZIP, включая replay.js.</p>
+
+    <section id="replay" aria-labelledby="replay-heading">
+      <h2 id="replay-heading" class="sr-only">Проигрывание записи</h2>
+      <div class="modebar">
+        <fieldset class="modes">
+          <legend class="sr-only">Набор записанных команд</legend>
+          <label><input type="radio" name="mode" value="v10"><span><b>1,0×</b><small>исходный темп</small></span></label>
+          <label><input type="radio" name="mode" value="v13" checked><span><b>1,3×</b><small>по умолчанию</small></span></label>
+          <label><input type="radio" name="mode" value="v18-drop"><span><b>1,8×</b><small>с отсечкой</small></span></label>
+          <label><input type="radio" name="mode" value="v18-keep"><span><b>1,8×</b><small>без отсечки</small></span></label>
+        </fieldset>
+        <label class="compare"><input type="checkbox" id="compare" checked><span>Наложить A/B</span></label>
+      </div>
+
+      <div class="bench">
+        <article class="panel instrument" aria-labelledby="arm-title">
+          <div class="panel-top">
+            <div><p class="eyebrow">01 / ПРОЕКЦИЯ КОМАНД</p><h3 id="arm-title">Два угла, один такт</h3></div>
+            <span class="tag">СХЕМА</span>
+          </div>
+          <svg class="arm" viewBox="0 0 520 280" role="img" aria-labelledby="arm-label arm-desc">
+            <title id="arm-label">Схема двухзвенного манипулятора</title>
+            <desc id="arm-desc">Рисунок двигается по двум записанным углам команды. Это не реальная кинематика и не измеренная поза.</desc>
+            <defs>
+              <pattern id="arm-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0v24" fill="none" stroke="#253f32"/></pattern>
+              <radialGradient id="arm-glow" cx="43%" cy="52%" r="64%"><stop stop-color="#213d2d"/><stop offset="1" stop-color="#101f18"/></radialGradient>
+              <linearGradient id="arm-alloy" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#89b98a"/><stop offset=".49" stop-color="#476f54"/><stop offset=".52" stop-color="#274c38"/><stop offset="1" stop-color="#172e23"/></linearGradient>
+              <g id="bearing">
+                <circle r="18" fill="#1b3226" stroke="#bad69b" stroke-width="1.5"/>
+                <circle r="12" fill="url(#arm-alloy)" stroke="#82af82"/>
+                <path d="M-6-3 0-7 6-3V3L0 7-6 3Z" fill="#d8f989"/>
+              </g>
+            </defs>
+            <rect x="1" y="1" width="518" height="278" rx="9" fill="url(#arm-glow)" stroke="#365241"/>
+            <rect x="12" y="12" width="496" height="256" fill="url(#arm-grid)"/>
+            <g fill="none" stroke="#486951">
+              <path d="M13 36V13h23m448 0h23v23m0 208v23h-23m-448 0H13v-23"/>
+              <path d="M177 218H482M177 218V49" stroke-dasharray="3 6"/>
+              <circle cx="177" cy="218" r="99" stroke-dasharray="2 5"/>
+              <path d="M87 251h343m-311-17h271m-268 33 44-49m-7 49 24-49m25 49 2-49m44 49-22-49m66 49-43-49m90 49-67-49m108 49-84-49" opacity=".62"/>
+            </g>
+            <text class="svg-kicker" x="28" y="41">JOINT SPACE</text>
+            <text class="svg-kicker" x="491" y="41" text-anchor="end">X / Y (SCHEMATIC)</text>
+            <path id="orbit" d="M333 125L334 94" stroke="#d8f989" stroke-opacity=".71" stroke-width="1.5" stroke-dasharray="2 4" fill="none"/>
+            <path d="M116 251 143 233h67l32 18v10H116Z" fill="#1b3829" stroke="#a0c48e"/>
+            <path d="M116 251 143 233h67l32 18Zm30-3h53" fill="url(#arm-alloy)" stroke="#9ac08c"/>
+            <ellipse cx="177" cy="236" rx="37" ry="12" fill="#345d42" stroke="#a0c48e"/>
+            <g id="arm-shoulder" transform="translate(177 218) rotate(-59)">
+              <path d="M-7-15 36-19h54l16 6 12 13-12 14-90 6-23-7Z" fill="url(#arm-alloy)" stroke="#afcd96" stroke-width="1.4"/>
+              <path d="M22-11 44-14h45l9 4-9 6H25Zm10 17h65l-8 5-57 3Z" fill="#a5c99b" opacity=".64"/>
+              <path d="M50 1h25m-22 4h19" stroke="#c1db9e"/>
+              <g id="arm-elbow" transform="translate(108 0) rotate(66)">
+                <path d="M-7-13h29l12 5h45l12 8-8 12-51-1-15 3H-5Z" fill="url(#arm-alloy)" stroke="#afcd96" stroke-width="1.4"/>
+                <path d="M21-8h7l10 6h40M39 6h31" fill="none" stroke="#9cc690" stroke-width="2"/>
+                <path d="M85-8h16v16H85Zm13-4h10l8 7-5 4-7-5h-6Zm0 24h10l8-7-5-4-7 5h-6Z" fill="#4e7756" stroke="#b1d795"/>
+                <use href="#bearing" transform="scale(.8)"/>
+              </g>
+              <use href="#bearing"/>
+            </g>
+            <circle id="tool-dot" cx="347" cy="137" r="5" fill="#d8f989" stroke="#172c20" stroke-width="2"/>
+          </svg>
+          <dl class="readouts two">
+            <div><dt>Плечо / pitch</dt><dd><output aria-live="off" id="shoulder">—</output> <small>рад</small></dd></div>
+            <div><dt>Локоть / pitch</dt><dd><output aria-live="off" id="elbow">—</output> <small>рад</small></dd></div>
+          </dl>
+        </article>
+
+        <article class="panel instrument scope-panel" aria-labelledby="scope-title">
+          <div class="panel-top">
+            <div><p class="eyebrow">02 / ОСЦИЛЛОГРАФ</p><h3 id="scope-title">Записанный сигнал</h3></div>
+            <label><span class="sr-only">Сустав для графика</span><select id="joint"><option value="1">Локоть</option><option value="0">Плечо</option></select></label>
+          </div>
+          <svg id="scope" class="scope" viewBox="0 0 482 216" role="img" aria-labelledby="scope-label">
+            <title id="scope-label">График угла команды по времени; позицию можно менять ползунком проигрывателя</title>
+            <g id="scope-grid"></g>
+            <path id="scope-a" class="wave wave-a"/>
+            <path id="scope-b" class="wave wave-b"/>
+            <path id="scope-head" class="cursor"/>
+            <circle id="scope-dot" r="4" class="sample"/>
+          </svg>
+          <div class="legend" role="group" aria-label="Легенда графика">
+            <span><i></i><b id="legend-a">—</b></span>
+            <span id="legend-b-wrap" class="legend-b"><i></i><b id="legend-b">—</b></span>
+          </div>
+          <dl class="readouts two">
+            <div><dt>Активных планов*</dt><dd><output aria-live="off" id="live">—</output></dd></div>
+            <div><dt>Отброшено хвостов*</dt><dd><output aria-live="off" id="dropped">—</output></dd></div>
+          </dl>
+          <p class="scope-note">* На конец ответа; отброшено — накопленный счётчик.</p>
+        </article>
+      </div>
+
+      <div class="transport panel" role="group" aria-label="Плеер записи">
+        <div class="transport-buttons">
+          <button id="play" class="primary" type="button"><span id="play-icon" aria-hidden="true">▶</span> <span id="play-text">Пуск</span></button>
+          <button id="prev" type="button" aria-label="−1 — на один такт назад" title="На один такт назад">−1</button>
+          <button id="next" type="button" aria-label="+1 — на один такт вперёд" title="На один такт вперёд">+1</button>
+        </div>
+        <div class="scrub">
+          <div class="scrub-head"><label for="seek">СИМУЛЯЦИОННОЕ ВРЕМЯ</label><output aria-live="off" id="clock" for="seek">0,000 с</output></div>
+          <input id="seek" type="range" min="0" max="759" step="1" value="0">
+          <div class="scrub-scale"><span>Начало</span><span>Плеер: ½× реального времени</span><span id="end-time">3,036 с</span></div>
+        </div>
+        <div class="transport-count"><span>ЗАПРОС / ТАКТ</span><strong><output aria-live="off" id="packet">01</output> <small>/</small> <output aria-live="off" id="tick">01</output></strong></div>
+      </div>
+      <p class="fineprint">Берём выходные углы из записи, а не запускаем модель в браузере. Схема показывает команды, не позу симулятора. 1,0×–1,8× — темп плана в записанном прогоне, не скорость плеера.</p>
+    </section>
+
+    <section id="clocks" class="panel section-panel" aria-labelledby="clock-title">
+      <div class="panel-top">
+        <div><p class="eyebrow">03 / ТАЙМИНГ</p><h2 id="clock-title">Два масштаба времени</h2></div>
+        <span class="tag">50 → 20</span>
+      </div>
+      <p>Наверху — расписание строк нового плана относительно наблюдения. Внизу — отдельная лупа на первые 80 мс: 20 команд с шагом 4 мс. Сервер не выдаёт первые 20 строк плана как есть.</p>
+      <svg id="schedules" viewBox="0 0 680 124" role="img" aria-label="Длительность плана и окно ближайшего ответа на одной временной оси"></svg>
+      <dl class="readouts timing-values">
+        <div><dt>Шаг плана</dt><dd><output aria-live="off" id="row-step">—</output> <small>мс</small></dd></div>
+        <div><dt>До последней строки</dt><dd><output aria-live="off" id="horizon">—</output> <small>мс</small></dd></div>
+        <div><dt>Предел жизни в бленде</dt><dd><output aria-live="off" id="blend-life">—</output> <small>мс</small></dd></div>
+      </dl>
+      <div class="zoom-head"><span>ЛУПА / ОДИН ОТВЕТ</span><strong id="zoom-time">+0 мс</strong></div>
+      <div id="tick-strip" class="tick-strip" role="group" aria-label="Выбрать такт текущего ответа"></div>
+      <div class="zoom-scale" aria-hidden="true"><span>+0 мс</span><span>следующий запрос → +80 мс</span></div>
+    </section>
+
+    <section id="patch" class="panel section-panel" aria-labelledby="patch-title">
+      <div class="panel-top">
+        <div><p class="eyebrow">04 / ПАТЧ-ПАНЕЛЬ</p><h2 id="patch-title">51 → 50 → 51</h2></div>
+        <span class="tag">ИНДЕКСЫ С НУЛЯ</span>
+      </div>
+      <p>Один и тот же угол может стоять на разных местах. Выбери канал, чтобы проследить его индексы в данных, модели и числовой команде.</p>
+      <div class="patch-controls">
+        <label for="channel">Канал в raw51</label><select id="channel"></select>
+        <div class="presets" role="group" aria-label="Примеры каналов">
+          <button type="button" data-channel="right_wrist_roll">Запястье</button>
+          <button type="button" data-channel="right_elbow_pitch">Локоть</button>
+          <button type="button" data-channel="root_yaw_global">Yaw основания</button>
+        </div>
+      </div>
+      <div class="patch-row"><span>raw51<small>данные</small></span><div class="patch-cells" id="raw-cells" aria-hidden="true"></div></div>
+      <div class="patch-row"><span>model50<small>модель</small></span><div class="patch-cells" id="model-cells" aria-hidden="true"></div></div>
+      <div class="patch-row"><span>wire51<small>команда</small></span><div class="patch-cells" id="wire-cells" aria-hidden="true"></div></div>
+      <ul class="patch-legend" aria-label="Цвета групп каналов">
+        <li><i class="cell"></i>Ноги</li><li><i class="cell" data-group="torso"></i>Торс и руки</li>
+        <li><i class="cell" data-group="hands"></i>Запястья и пальцы</li><li><i class="cell" data-group="base"></i>Основание</li>
+        <li><i class="cell" data-group="vel"></i>Скорости</li>
+      </ul>
+      <p id="mapping" class="mapping" role="status"></p>
+      <p class="fineprint">Граф показывает индексы из <a href="https://github.com/overbaffe1/Green-Challenge/blob/main/greenchallenge/layout.py">layout.py</a>, а не числовую калибровку. Например, протокол передаёт углы пальцев относительно их исходной позы.</p>
+    </section>
+  </main>
+  <footer class="wrap footer"><span>GC / FIELD INSTRUMENTS · 2026</span><a href="https://github.com/overbaffe1/Green-Challenge/blob/main/docs/portfolio/exhibition.md">Как сделана витрина ↗</a></footer>
+</body>
+</html>

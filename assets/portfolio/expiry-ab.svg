@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 452" width="1080" height="452" role="img">
+<title>A/B: число активных планов при 1,8×, с отсечкой и без</title>
+<rect x="1" y="1" width="1078" height="450" fill="#0c1813" stroke="#345240" rx="12"/>
+<text x="35" y="37" fill="#d8f989" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="16" font-weight="400" text-anchor="start">FIG. 02  /  A/B · CPU</text>
+<text x="35" y="84" fill="#edf4e7" font-family="DejaVu Sans,Arial,sans-serif" font-size="39" font-weight="700" text-anchor="start">Когда план заканчивается раньше</text>
+<text x="1037" y="37" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="16" font-weight="400" text-anchor="end">1,8× / ОДИН ТЕМП</text>
+<path d="M35 104h1010M719 123v276" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="77" y="130" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">АКТИВНЫЕ ПЛАНЫ К КОНЦУ ОТВЕТА</text>
+<path d="M77 342.0H694" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="66" y="346.0" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">0</text>
+<path d="M77 276.0625H694" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="66" y="280.0625" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">5</text>
+<path d="M77 210.125H694" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="66" y="214.125" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">10</text>
+<path d="M77 144.1875H694" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="66" y="148.1875" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">15</text>
+<path d="M77.0 142V342" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="72.0" y="365" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">0</text>
+<path d="M279.9605263157895 142V342" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="274.9605263157895" y="365" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">1</text>
+<path d="M482.92105263157896 142V342" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="477.92105263157896" y="365" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">2</text>
+<path d="M685.8815789473684 142V342" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="680.8815789473684" y="365" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">3</text>
+<path d="M77.00 328.81L93.24 328.81L93.24 315.62L109.47 315.62L109.47 302.44L125.71 302.44L125.71 289.25L141.95 289.25L141.95 276.06L158.18 276.06L158.18 262.88L174.42 262.88L174.42 249.69L190.66 249.69L190.66 236.50L206.89 236.50L206.89 223.31L223.13 223.31L223.13 210.12L239.37 210.12L239.37 196.94L255.61 196.94L255.61 183.75L271.84 183.75L271.84 170.56L288.08 170.56L288.08 157.38L304.32 157.38L304.32 144.19L320.55 144.19L320.55 144.19L336.79 144.19L336.79 144.19L353.03 144.19L353.03 144.19L369.26 144.19L369.26 144.19L385.50 144.19L385.50 144.19L401.74 144.19L401.74 144.19L417.97 144.19L417.97 144.19L434.21 144.19L434.21 144.19L450.45 144.19L450.45 144.19L466.68 144.19L466.68 144.19L482.92 144.19L482.92 144.19L499.16 144.19L499.16 144.19L515.39 144.19L515.39 144.19L531.63 144.19L531.63 144.19L547.87 144.19L547.87 144.19L564.11 144.19L564.11 144.19L580.34 144.19L580.34 144.19L596.58 144.19L596.58 144.19L612.82 144.19L612.82 144.19L629.05 144.19L629.05 144.19L645.29 144.19L645.29 144.19L661.53 144.19L661.53 144.19L677.76 144.19L677.76 144.19" fill="none" stroke="#f4c48b" stroke-width="3" stroke-dasharray="6 5" stroke-linejoin="round"/>
+<path d="M77.00 328.81L93.24 328.81L93.24 315.62L109.47 315.62L109.47 302.44L125.71 302.44L125.71 289.25L141.95 289.25L141.95 276.06L158.18 276.06L158.18 262.88L174.42 262.88L174.42 249.69L190.66 249.69L190.66 236.50L206.89 236.50L206.89 223.31L223.13 223.31L223.13 210.12L239.37 210.12L239.37 196.94L255.61 196.94L255.61 196.94L271.84 196.94L271.84 196.94L288.08 196.94L288.08 196.94L304.32 196.94L304.32 196.94L320.55 196.94L320.55 196.94L336.79 196.94L336.79 196.94L353.03 196.94L353.03 196.94L369.26 196.94L369.26 196.94L385.50 196.94L385.50 196.94L401.74 196.94L401.74 196.94L417.97 196.94L417.97 196.94L434.21 196.94L434.21 196.94L450.45 196.94L450.45 196.94L466.68 196.94L466.68 196.94L482.92 196.94L482.92 196.94L499.16 196.94L499.16 196.94L515.39 196.94L515.39 196.94L531.63 196.94L531.63 196.94L547.87 196.94L547.87 196.94L564.11 196.94L564.11 196.94L580.34 196.94L580.34 196.94L596.58 196.94L596.58 196.94L612.82 196.94L612.82 196.94L629.05 196.94L629.05 196.94L645.29 196.94L645.29 196.94L661.53 196.94L661.53 196.94L677.76 196.94L677.76 196.94" fill="none" stroke="#d8f989" stroke-width="3" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="694" y="388" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">СИМ. ВРЕМЯ [с]</text>
+<rect x="740" y="124" width="304" height="82" fill="#172b21" stroke="#345240" rx="8"/>
+<text x="756" y="151" fill="#f4c48b" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">A / БЕЗ ОТСЕЧКИ</text>
+<text x="756" y="186" fill="#edf4e7" font-family="DejaVu Sans,Arial,sans-serif" font-size="24" font-weight="700" text-anchor="start">15 планов в пике</text>
+<rect x="740" y="216" width="304" height="82" fill="#172b21" stroke="#345240" rx="8"/>
+<text x="756" y="243" fill="#d8f989" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">B / С ОТСЕЧКОЙ</text>
+<text x="756" y="278" fill="#edf4e7" font-family="DejaVu Sans,Arial,sans-serif" font-size="24" font-weight="700" text-anchor="start">12 планов в пике</text>
+<text x="742" y="326" fill="#edf4e7" font-family="DejaVu Sans,Arial,sans-serif" font-size="18" font-weight="400" text-anchor="start">27 хвостов отброшено в B</text>
+<text x="742" y="353" fill="#a8c2ac" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start">956 мс до последней строки</text>
+<text x="742" y="378" fill="#a8c2ac" font-family="DejaVu Sans,Arial,sans-serif" font-size="16" font-weight="400" text-anchor="start">1200 мс — предел жизни плана</text>
+<path d="M35 404h1010" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="none" stroke-linejoin="round"/>
+<text x="35" y="431" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="start">ДВА ПРОГОНА · ТЕСТОВАЯ ПОЛИТИКА · НЕ GREEN SIM</text>
+<text x="1045" y="431" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="14" font-weight="400" text-anchor="end">38 ЗАПРОСОВ В КАЖДОМ</text>
+</svg>
