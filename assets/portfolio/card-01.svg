@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 256" width="420" height="256" role="img">
+<title>Пульт исполнения</title>
+<rect x="1" y="1" width="418" height="254" fill="#0c1813" stroke="#345240" rx="12"/>
+<text x="20" y="32" fill="#d8f989" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="15" font-weight="400" text-anchor="start">01 / REPLAY</text>
+<text x="399" y="32" fill="#a8c2ac" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="13" font-weight="400" text-anchor="end">GC / 26</text>
+<defs><pattern id="paper" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M0 16V0h16" fill="none" stroke="#274236" stroke-width="1"/></pattern></defs>
+<rect x="20" y="50" width="380" height="140" fill="#10241a" stroke="#345240" rx="4"/>
+<rect x="20" y="50" width="380" height="140" fill="url(#paper)" stroke="none" rx="4"/>
+<circle cx="129.00" cy="171.00" r="67" fill="none" stroke="#345240"/>
+<path d="M33 171h348M129 67v108" fill="none" stroke="#345240" stroke-width="1" stroke-dasharray="2 4" stroke-linejoin="round"/>
+<path d="M275.85 103.54L275.85 103.54L275.85 103.54L275.85 103.54L275.85 103.54L275.85 103.54L275.83 103.53L275.56 103.38L275.02 103.13L274.33 103.01L273.64 102.94L272.90 102.85L272.13 102.78L271.38 102.73L270.57 102.66L269.81 102.63L269.00 102.60L268.19 102.57L267.40 102.57L266.57 102.55L265.77 102.56L264.95 102.57L264.11 102.59L263.31 102.62L262.45 102.64L261.65 102.69L260.81 102.73L259.95 102.78L259.14 102.85L258.27 102.91L257.45 102.99L256.59 103.07L255.72 103.15L254.90 103.25L254.01 103.34L253.18 103.46L252.32 103.56L251.43 103.68L250.63 103.82L249.78 103.95L248.98 104.09L248.19 104.24L247.35 104.38L246.58 104.54L245.74 104.68L244.94 104.84L244.15 105.01L243.31 105.17L242.54 105.35L241.69 105.51L240.88 105.70L240.08 105.89L239.23 106.07L238.45 106.28L237.59 106.47L236.78 106.69L235.97 106.90L235.11 107.12L234.31 107.34L233.45 107.57L232.64 107.81L231.84 108.05L231.03 108.30L230.34 108.54L229.62 108.78L229.02 109.02L228.48 109.24L228.00 109.44L227.69 109.61L227.47 109.74L227.44 109.78L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79L227.44 109.79" fill="none" stroke="#d8f989" stroke-width="1.5" stroke-dasharray="2 4" stroke-linejoin="round"/>
+<rect x="86" y="176" width="84" height="6" fill="#345338" stroke="#91ae75" rx="2"/>
+<path d="M129.00 171.00L132.81 78.20L227.44 109.79" fill="none" stroke="#a8cd92" stroke-width="25" stroke-dasharray="none" stroke-linejoin="round"/>
+<path d="M129.00 171.00L132.81 78.20L227.44 109.79" fill="none" stroke="#4b7953" stroke-width="21" stroke-dasharray="none" stroke-linejoin="round"/>
+<path d="M129.00 171.00L132.81 78.20L227.44 109.79" fill="none" stroke="#273f31" stroke-width="7" stroke-dasharray="none" stroke-linejoin="round"/>
+<circle cx="129.00" cy="171.00" r="11" fill="#1b3226" stroke="#a8cd92"/>
+<circle cx="132.81" cy="78.20" r="11" fill="#1b3226" stroke="#a8cd92"/>
+<circle cx="129.00" cy="171.00" r="4" fill="#d8f989" stroke="none"/>
+<circle cx="132.81" cy="78.20" r="4" fill="#d8f989" stroke="none"/>
+<circle cx="227.44" cy="109.79" r="4" fill="#d8f989" stroke="none"/>
+<text x="388" y="68" fill="#edf4e7" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="10" font-weight="400" text-anchor="end">CPU / 250 Hz</text>
+<text x="20" y="233" fill="#edf4e7" font-family="DejaVu Sans,Arial,sans-serif" font-size="29" font-weight="700" text-anchor="start">Пульт исполнения</text>
+<text x="394" y="231" fill="#d8f989" font-family="DejaVu Sans Mono,Menlo,monospace" font-size="22" font-weight="400" text-anchor="end">↗</text>
+</svg>

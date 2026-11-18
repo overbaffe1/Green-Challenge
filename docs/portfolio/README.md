@@ -1,4 +1,4 @@
-[← К кейсу Green Challenge](../../README.md) · [English overview](overview.en.md)
+[← К кейсу Green Challenge](../../README.md) · [Пульт, A/B и STL](exhibition.md) · [English overview](overview.en.md)
 
 # Телеметрия CPU-стенда
 
